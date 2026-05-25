@@ -324,10 +324,21 @@ export default function App() {
   };
 
   const handleToggleCart = (place) => {
-    if (cart.some(item => item.id === place.id)) {
-      setCart(cart.filter(item => item.id !== place.id));
+    // 1. 일정표용 복제 숙소 ID일 경우 원래의 ID로 정화
+    const targetId = typeof place.id === 'string' && place.id.includes('-hotel-') 
+      ? place.id.split('-hotel-')[1] 
+      : place.id;
+
+    // 2. 만약 cart에 추가하려는데 place.id가 일정표용 복제 숙소 ID라면,
+    //    cart에는 원래 ID를 가진 원본 형태의 객체로 저장해 줍니다.
+    const cleanPlace = typeof place.id === 'string' && place.id.includes('-hotel-')
+      ? { ...place, id: targetId }
+      : place;
+
+    if (cart.some(item => item.id === targetId)) {
+      setCart(cart.filter(item => item.id !== targetId));
     } else {
-      setCart([...cart, place]);
+      setCart([...cart, cleanPlace]);
     }
   };
 

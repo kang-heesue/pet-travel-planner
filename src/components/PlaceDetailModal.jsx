@@ -9,7 +9,11 @@ export default function PlaceDetailModal({
 }) {
   if (!selectedPlace) return null;
 
-  const isInCart = cart.some(item => item.id === selectedPlace.id);
+  const targetId = typeof selectedPlace.id === 'string' && selectedPlace.id.includes('-hotel-')
+    ? selectedPlace.id.split('-hotel-')[1]
+    : selectedPlace.id;
+
+  const isInCart = cart.some(item => item.id === targetId);
 
   return (
     <div style={{
