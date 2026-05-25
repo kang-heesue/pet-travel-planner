@@ -104,7 +104,7 @@ export default function App() {
     const loadCSVData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/데이터.csv');
+        const response = await fetch(`${import.meta.env.BASE_URL}데이터.csv`);
         if (!response.ok) throw new Error("CSV 데이터 로드 실패");
         
         const text = await response.text();
