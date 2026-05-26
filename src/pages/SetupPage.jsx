@@ -138,8 +138,9 @@ export default function SetupPage({
         </div>
 
         {/* 로고 헤더 */}
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center' }} className="setup-header-section">
           <div
+            className="setup-logo"
             style={{
               background:
                 'linear-gradient(135deg, var(--primary) 0%, #e28f76 100%)',
@@ -154,9 +155,10 @@ export default function SetupPage({
               boxShadow: '0 8px 24px rgba(224, 122, 95, 0.25)',
             }}
           >
-            <Compass size={32} />
+            <Compass className="setup-logo-icon" size={32} />
           </div>
           <h1
+            className="setup-title"
             style={{
               fontSize: '28px',
               fontWeight: 950,
@@ -168,6 +170,7 @@ export default function SetupPage({
             놀러가개 🐾
           </h1>
           <h2
+            className="setup-subtitle"
             style={{
               fontSize: '18px',
               fontWeight: 800,
@@ -179,6 +182,7 @@ export default function SetupPage({
             어디로, 언제 떠나시나요? ✈️
           </h2>
           <p
+            className="setup-description"
             style={{
               fontSize: '12px',
               color: 'var(--text-muted)',
@@ -191,7 +195,7 @@ export default function SetupPage({
         </div>
 
         {/* 설정 폼 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="setup-form" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {/* 1. 여행 희망 지역 검색 */}
           <div
             style={{

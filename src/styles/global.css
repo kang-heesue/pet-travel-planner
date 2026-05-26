@@ -152,32 +152,77 @@ a {
    ========================================================================== */
 
 @media (max-width: 768px) {
-  /* 1. 앱 컨테이너 세로 컬럼 스왑 */
+  /* 0. 모바일 입력 창 자동 줌 방지 (iOS 대응) */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* 1. 앱 컨테이너 세로 컬럼 스왑 및 높이 고정 (100dvh 지원) */
   .app-container {
     flex-direction: column !important;
     height: 100vh !important;
+    height: 100dvh !important;
     width: 100vw !important;
     overflow: hidden !important;
   }
 
-  /* 2. SetupPage 모바일 여백 튜닝 */
+  /* 2. SetupPage 모바일 여백 튜닝 (100% 한 화면에 딱 맞게 강제 클램핑) */
   .setup-container {
-    padding: 16px !important;
+    padding: 12px !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
   .setup-card {
-    padding: 24px 20px !important;
-    gap: 20px !important;
+    padding: 16px 14px !important;
+    gap: 12px !important;
+    max-height: 96vh !important;
+    overflow-y: auto !important;
+    border-radius: var(--radius-md) !important;
   }
   .setup-card h1 {
-    font-size: 24px !important;
+    font-size: 20px !important;
+    margin-bottom: 2px !important;
   }
   .setup-card h2 {
-    font-size: 16px !important;
+    font-size: 14px !important;
+    margin-top: 4px !important;
+  }
+  .setup-logo {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 8px auto !important;
+  }
+  .setup-logo-icon {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  .setup-description {
+    font-size: 10px !important;
+    margin-top: 2px !important;
+  }
+  .setup-form {
+    gap: 12px !important;
+  }
+  .setup-form label {
+    font-size: 10px !important;
+    gap: 4px !important;
+  }
+  .setup-form input {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+  .setup-card button {
+    padding: 12px !important;
+    font-size: 13px !important;
   }
 
   /* 3. PlanPage 레이아웃 반응형 보정 - 🌟 지도가 화면 전체를 깊게 채우고, 드래그가 100% 작동하도록 pointer-events 보장 */
   .main-map-area {
-    height: 100vh !important; /* 지도가 화면 전체를 뒤덮음 */
+    height: 100vh !important;
+    height: 100dvh !important; /* 지도가 화면 전체를 뒤덮음 */
     width: 100vw !important;
     position: relative !important;
     flex: none !important;
@@ -188,7 +233,7 @@ a {
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
-    height: calc(100vh - 48px) !important; /* 바텀시트 손잡이 뺀 영역만큼 꽉 채움 */
+    height: 100% !important; /* 부모인 main-map-area를 꽉 채움 */
     z-index: 10 !important;
     pointer-events: auto !important; /* 지도 드래그 100% 허용 */
     touch-action: auto !important;
@@ -210,8 +255,8 @@ a {
     background: #fff !important;
     flex: none !important;
     
-    /* 🌟 기본 접힌 상태: 관심 일정 담기 타이틀(145px)까지 터치 없이 선명하게 노출 */
-    transform: translateY(calc(78vh - 145px)) !important; 
+    /* 🌟 기본 접힌 상태: 추천 상세 일정표 타이틀(90px)까지 터치 없이 선명하게 노출 */
+    transform: translateY(calc(78vh - 90px)) !important; 
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 -8px 32px rgba(45, 55, 72, 0.15) !important;
     
@@ -250,7 +295,7 @@ a {
   .plan-header-banner {
     top: 6px !important;
     left: 6px !important;
-    right: 48px !important; /* 확대 슬라이더 간섭 방지 Spacing */
+    right: 6px !important; /* 확대 슬라이더 간섭 방지 Spacing */
     padding: 6px 12px !important;
     gap: 6px !important;
     flex-direction: row !important; /* 모바일에서도 깔끔하게 한 줄 수평 배치 */
@@ -277,7 +322,7 @@ a {
 
   /* 5. 하단 카테고리 슬라이더 카드 크기 튜닝 (지도를 가리지 않게 콤팩트화 및 터치 투과 포인터 보존) */
   .place-carousel-container {
-    bottom: 153px !important; /* 접힌 바텀시트(145px) 바로 위쪽인 153px 지점에 카드 안착 */
+    bottom: 8px !important; /* 모바일 장소 선택 상태에서는 바텀시트가 비노출되므로 최하단 밀착 배정 */
     left: 4px !important;
     right: 4px !important;
     gap: 4px !important;

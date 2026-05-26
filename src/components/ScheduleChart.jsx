@@ -66,8 +66,9 @@ export default function ScheduleChart({ dayPlaces }) {
     }
 
     // SVG 크기 세팅
-    const width = 140;
-    const height = 140;
+    const isMobileSize = window.innerWidth <= 768;
+    const width = isMobileSize ? 110 : 140;
+    const height = isMobileSize ? 110 : 140;
     const radius = Math.min(width, height) / 2;
 
     // 기존 요소 제거
@@ -124,8 +125,8 @@ export default function ScheduleChart({ dayPlaces }) {
     svg
       .append('text')
       .attr('text-anchor', 'middle')
-      .attr('dy', '-5px')
-      .style('font-size', '9px')
+      .attr('dy', isMobileSize ? '-3px' : '-5px')
+      .style('font-size', isMobileSize ? '8px' : '9px')
       .style('font-weight', '700')
       .style('fill', 'var(--text-muted)')
       .text('활동 시간');
@@ -136,26 +137,34 @@ export default function ScheduleChart({ dayPlaces }) {
     svg
       .append('text')
       .attr('text-anchor', 'middle')
-      .attr('dy', '12px')
-      .style('font-size', '13px')
+      .attr('dy', isMobileSize ? '9px' : '12px')
+      .style('font-size', isMobileSize ? '11px' : '13px')
       .style('font-weight', '850')
       .style('fill', 'var(--text-main)')
       .style('font-family', 'Outfit')
       .text(`${totalHours}h`);
   }, [dayPlaces]);
 
+  const [isMobile, setIsMobile] = React.useState(false);
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '14px',
+        gap: isMobile ? '8px' : '14px',
         background: 'rgba(255,255,255,0.4)',
-        padding: '12px 14px',
+        padding: isMobile ? '8px 12px' : '12px 14px',
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--border)',
-        marginTop: '12px',
-        marginBottom: '16px',
+        marginTop: isMobile ? '8px' : '12px',
+        marginBottom: isMobile ? '8px' : '16px',
       }}
     >
       <svg ref={svgRef} style={{ flexShrink: 0 }}></svg>
@@ -166,12 +175,12 @@ export default function ScheduleChart({ dayPlaces }) {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: '5px',
+          gap: isMobile ? '3px' : '5px',
         }}
       >
         <h4
           style={{
-            fontSize: '11px',
+            fontSize: isMobile ? '10px' : '11px',
             fontWeight: 800,
             color: 'var(--text-main)',
             marginBottom: '2px',
@@ -194,10 +203,10 @@ export default function ScheduleChart({ dayPlaces }) {
             );
 
             const categories = [
-              { key: 'tourist', label: '명소 🏞️', color: '#4e79a7' },
-              { key: 'restaurant', label: '식당 🍽️', color: '#e15759' },
-              { key: 'cafe', label: '카페 ☕', color: '#f28e2b' },
-              { key: 'hotel', label: '숙소 🏠', color: '#59a14f' },
+              { key: 'tourist', label: isMobile ? '명소' : '명소 🏞️', color: '#4e79a7' },
+              { key: 'restaurant', label: isMobile ? '식당' : '식당 🍽️', color: '#e15759' },
+              { key: 'cafe', label: isMobile ? '카페' : '카페 ☕', color: '#f28e2b' },
+              { key: 'hotel', label: isMobile ? '숙소' : '숙소 🏠', color: '#59a14f' },
             ];
 
             return categories.map((cat) => {
@@ -210,7 +219,7 @@ export default function ScheduleChart({ dayPlaces }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    fontSize: '10px',
+                    fontSize: isMobile ? '9px' : '10px',
                   }}
                 >
                   <span

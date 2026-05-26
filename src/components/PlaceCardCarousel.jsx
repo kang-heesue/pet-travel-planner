@@ -9,7 +9,17 @@ export default function PlaceCardCarousel({
   handleToggleCart,
   selectedCategory,
   setSelectedCategory,
+  handleOptimizeSchedule,
 }) {
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div
       className="place-carousel-container"
@@ -29,45 +39,74 @@ export default function PlaceCardCarousel({
       <div
         style={{
           display: 'flex',
-          gap: '8px',
+          gap: '6px',
           overflowX: 'auto',
           paddingBottom: '4px',
           pointerEvents: 'auto',
+          alignItems: 'center',
+          width: '100%',
         }}
       >
-        {[
-          { id: 'all', label: '전체 보기', icon: '🐾' },
-          { id: 'tourist', label: '관광지 🏞️', icon: '🏞️' },
-          { id: 'restaurant', label: '식당 🍽️', icon: '🍽️' },
-          { id: 'cafe', label: '카페 ☕', icon: '☕' },
-          { id: 'hotel', label: '숙소 🏠', icon: '🏠' },
-        ].map((chip) => (
+        <div style={{ display: 'flex', gap: isMobile ? '6px' : '8px' }}>
+          {[
+            { id: 'all', label: '전체 보기', icon: '🐾' },
+            { id: 'tourist', label: isMobile ? '관광지' : '관광지 🏞️', icon: '🏞️' },
+            { id: 'restaurant', label: isMobile ? '식당' : '식당 🍽️', icon: '🍽️' },
+            { id: 'cafe', label: isMobile ? '카페' : '카페 ☕', icon: '☕' },
+            { id: 'hotel', label: isMobile ? '숙소' : '숙소 🏠', icon: '🏠' },
+          ].map((chip) => (
+            <button
+              key={chip.id}
+              onClick={() => setSelectedCategory(chip.id)}
+              className="glass interactive"
+              style={{
+                padding: isMobile ? '6px 12px' : '8px 16px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: isMobile ? '11px' : '13px',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                color:
+                  selectedCategory === chip.id ? 'white' : 'var(--text-main)',
+                background:
+                  selectedCategory === chip.id
+                    ? 'var(--primary)'
+                    : 'var(--bg-glass)',
+                border:
+                  selectedCategory === chip.id
+                    ? '1px solid var(--primary)'
+                    : '1px solid rgba(255,255,255,0.5)',
+              }}
+            >
+              <span style={{ marginRight: isMobile ? '4px' : '6px' }}>{chip.icon}</span>
+              {chip.label}
+            </button>
+          ))}
+        </div>
+
+        {cart.length > 0 && isMobile && (
           <button
-            key={chip.id}
-            onClick={() => setSelectedCategory(chip.id)}
-            className="glass interactive"
+            onClick={handleOptimizeSchedule}
+            className="interactive"
             style={{
-              padding: '8px 16px',
+              padding: '6px 12px',
               borderRadius: 'var(--radius-full)',
-              fontSize: '13px',
-              fontWeight: 600,
+              fontSize: '11px',
+              fontWeight: 850,
               whiteSpace: 'nowrap',
-              color:
-                selectedCategory === chip.id ? 'white' : 'var(--text-main)',
-              background:
-                selectedCategory === chip.id
-                  ? 'var(--primary)'
-                  : 'var(--bg-glass)',
-              border:
-                selectedCategory === chip.id
-                  ? '1px solid var(--primary)'
-                  : '1px solid rgba(255,255,255,0.5)',
+              color: 'white',
+              background: 'linear-gradient(135deg, var(--primary) 0%, #d4684a 100%)',
+              border: '1px solid var(--primary)',
+              boxShadow: '0 4px 10px rgba(224, 122, 95, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginLeft: 'auto',
+              flexShrink: 0,
             }}
           >
-            <span style={{ marginRight: '6px' }}>{chip.icon}</span>
-            {chip.label}
+            ⚡ AI 동선 생성 ({cart.length})
           </button>
-        ))}
+        )}
       </div>
 
       {/* 2. 가로 스크롤 카드 슬라이더 */}

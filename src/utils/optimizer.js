@@ -477,7 +477,7 @@ export const optimizeSchedule = (
 
     // 마지막 날 외 숙소 입실 오토피팅 보정
     if (!isLastDay) {
-      const targetCheckInMinutes = 1170; // 19:30 기준
+      const targetCheckInMinutes = 1200; // 20:00 기준
       let earlyDeficit = targetCheckInMinutes - dryEndTimeInMins;
 
       if (earlyDeficit > 0) {

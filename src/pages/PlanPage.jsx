@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Search } from 'lucide-react';
 import KakaoMap from '../components/KakaoMap';
 import ItinerarySidebar from '../components/ItinerarySidebar';
 import PlaceCardCarousel from '../components/PlaceCardCarousel';
@@ -33,6 +33,14 @@ export default function PlanPage({
   onBackToSetup,
 }) {
   const [isSidebarExpanded, setIsSidebarExpanded] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // 여행 일수 계산
   const getTravelDaysCount = () => {
@@ -131,6 +139,45 @@ export default function PlanPage({
             </span>
         </div>
 
+        {/* 모바일 장소 탐색 중 상단 고정 검색바 */}
+        {!isOptimized && isMobile && (
+          <div
+            className="glass"
+            style={{
+              position: 'absolute',
+              top: '52px',
+              left: '6px',
+              right: '6px',
+              zIndex: 100,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'var(--bg-glass)',
+              padding: '8px 12px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <Search size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+            <input
+              type="text"
+              placeholder="매장 명칭, 동네 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                outline: 'none',
+                width: '100%',
+                fontSize: '16px',
+                fontWeight: 600,
+                color: 'var(--text-main)',
+              }}
+            />
+          </div>
+        )}
+
         {/* 카카오 지도 */}
         <div
           className="map-wrapper"
@@ -165,28 +212,31 @@ export default function PlanPage({
             handleToggleCart={handleToggleCart}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
+            handleOptimizeSchedule={handleOptimizeSchedule}
           />
         )}
       </div>
 
       {/* 2. 우측 사이드바 */}
-      <ItinerarySidebar
-        cart={cart}
-        setCart={setCart}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        isOptimized={isOptimized}
-        optimizedSchedule={optimizedSchedule}
-        activeDayTab={activeDayTab}
-        setActiveDayTab={setActiveDayTab}
-        handleOptimizeSchedule={handleOptimizeSchedule}
-        handleResetSchedule={handleResetSchedule}
-        selectedPlace={selectedPlace}
-        setSelectedPlace={setSelectedPlace}
-        startPlaceName={startPlaceName}
-        isSidebarExpanded={isSidebarExpanded}
-        setIsSidebarExpanded={setIsSidebarExpanded}
-      />
+      {(!isMobile || isOptimized) && (
+        <ItinerarySidebar
+          cart={cart}
+          setCart={setCart}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          isOptimized={isOptimized}
+          optimizedSchedule={optimizedSchedule}
+          activeDayTab={activeDayTab}
+          setActiveDayTab={setActiveDayTab}
+          handleOptimizeSchedule={handleOptimizeSchedule}
+          handleResetSchedule={handleResetSchedule}
+          selectedPlace={selectedPlace}
+          setSelectedPlace={setSelectedPlace}
+          startPlaceName={startPlaceName}
+          isSidebarExpanded={isSidebarExpanded}
+          setIsSidebarExpanded={setIsSidebarExpanded}
+        />
+      )}
 
       {/* 3. 상세 모달 */}
       <PlaceDetailModal

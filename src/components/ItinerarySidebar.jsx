@@ -19,12 +19,14 @@ export default function ItinerarySidebar({
   isSidebarExpanded,
   setIsSidebarExpanded,
 }) {
-  const handleRemoveFromCart = (id) => {
-    setCart(cart.filter((item) => item.id !== id));
-  };
+  const [isMobile, setIsMobile] = React.useState(false);
 
-  const dragStartY = useRef(null);
-  const hotelCount = cart.filter((item) => item.category === 'hotel').length;
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div
@@ -88,13 +90,16 @@ export default function ItinerarySidebar({
           }}
         >
           <div
-            style={{ padding: '24px', borderBottom: '1px solid var(--border)' }}
+            style={{ 
+              padding: isMobile ? '12px 16px' : '24px', 
+              borderBottom: '1px solid var(--border)' 
+            }}
           >
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                marginBottom: '8px',
+                marginBottom: isMobile ? '4px' : '8px',
               }}
             >
               <span
@@ -113,18 +118,20 @@ export default function ItinerarySidebar({
                 <Sparkles size={11} /> AI 최적 경로 완성
               </span>
             </div>
-            <h2 style={{ fontSize: '20px', fontWeight: 800 }}>
+            <h2 style={{ fontSize: isMobile ? '16px' : '20px', fontWeight: 800 }}>
               🗺️ 추천 상세 일정표
             </h2>
-            <p
-              style={{
-                fontSize: '12px',
-                color: 'var(--text-muted)',
-                marginTop: '2px',
-              }}
-            >
-              지정해주신 시작지를 기점으로 최적화한 순서입니다.
-            </p>
+            {!isMobile && (
+              <p
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--text-muted)',
+                  marginTop: '2px',
+                }}
+              >
+                지정해주신 시작지를 기점으로 최적화한 순서입니다.
+              </p>
+            )}
           </div>
 
           {/* 일차별 탭 */}
@@ -132,9 +139,9 @@ export default function ItinerarySidebar({
             style={{
               display: 'flex',
               background: '#f7ebe7',
-              padding: '6px',
+              padding: isMobile ? '4px' : '6px',
               borderRadius: 'var(--radius-md)',
-              margin: '16px 24px 8px 24px',
+              margin: isMobile ? '8px 16px 4px 16px' : '16px 24px 8px 24px',
             }}
           >
             {Object.keys(optimizedSchedule).map((dayKey) => (
@@ -143,9 +150,9 @@ export default function ItinerarySidebar({
                 onClick={() => setActiveDayTab(dayKey)}
                 style={{
                   flex: 1,
-                  padding: '8px 0',
+                  padding: isMobile ? '6px 0' : '8px 0',
                   borderRadius: 'var(--radius-sm)',
-                  fontSize: '13px',
+                  fontSize: isMobile ? '12px' : '13px',
                   fontWeight: 700,
                   textAlign: 'center',
                   color: activeDayTab === dayKey ? 'white' : 'var(--primary)',
@@ -160,13 +167,13 @@ export default function ItinerarySidebar({
           </div>
 
           {/* 차트 및 타임라인 피드 스크롤 컨테이너 */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '8px 16px' : '16px 24px' }}>
             {/* D3 차트 주입 */}
             <div
               style={{
-                padding: '0 0 16px 0',
+                padding: isMobile ? '0 0 8px 0' : '0 0 16px 0',
                 borderBottom: '1px dashed var(--border)',
-                marginBottom: '20px',
+                marginBottom: isMobile ? '10px' : '20px',
               }}
             >
               <ScheduleChart
@@ -222,20 +229,20 @@ export default function ItinerarySidebar({
                   style={{
                     background: bgColor,
                     borderRadius: 'var(--radius-sm)',
-                    padding: '10px 14px',
-                    fontSize: '11px',
+                    padding: isMobile ? '8px 12px' : '10px 14px',
+                    fontSize: isMobile ? '10px' : '11px',
                     fontWeight: 700,
                     color: color,
                     lineHeight: '1.5',
-                    marginBottom: '20px',
+                    marginBottom: isMobile ? '10px' : '20px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: isMobile ? '4px' : '8px',
                     border: `1px solid ${color}40`,
                     boxShadow: 'var(--shadow-sm)',
                   }}
                 >
-                  <span style={{ fontSize: '14px' }}>{emoji}</span>
+                  <span style={{ fontSize: isMobile ? '12px' : '14px' }}>{emoji}</span>
                   <div>{text}</div>
                 </div>
               );
@@ -262,17 +269,17 @@ export default function ItinerarySidebar({
                       key={place.id}
                       style={{
                         display: 'flex',
-                        gap: '16px',
+                        gap: isMobile ? '12px' : '16px',
                         position: 'relative',
-                        paddingBottom: '24px',
+                        paddingBottom: isMobile ? '16px' : '24px',
                       }}
                     >
                       {idx !== arr.length - 1 && (
                         <div
                           style={{
                             position: 'absolute',
-                            left: '15px',
-                            top: '32px',
+                            left: isMobile ? '13px' : '15px',
+                            top: isMobile ? '28px' : '32px',
                             bottom: 0,
                             width: '2px',
                             background: 'var(--border)',
@@ -284,14 +291,14 @@ export default function ItinerarySidebar({
                         style={{
                           background: color,
                           color: 'white',
-                          width: '32px',
-                          height: '32px',
+                          width: isMobile ? '28px' : '32px',
+                          height: isMobile ? '28px' : '32px',
                           borderRadius: '50%',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontWeight: 800,
-                          fontSize: isStartNode ? '10px' : '13px',
+                          fontSize: isStartNode ? '10px' : isMobile ? '11px' : '13px',
                           fontFamily: 'Outfit',
                         }}
                       >
@@ -309,7 +316,7 @@ export default function ItinerarySidebar({
                         }}
                         style={{
                           flex: 1,
-                          padding: '14px 16px',
+                          padding: isMobile ? '10px 12px' : '14px 16px',
                           borderRadius: 'var(--radius-md)',
                           border: '1px solid var(--border)',
                           cursor: isStartNode ? 'default' : 'pointer',
@@ -332,7 +339,7 @@ export default function ItinerarySidebar({
                         >
                           <span
                             style={{
-                              fontSize: '11px',
+                              fontSize: isMobile ? '10px' : '11px',
                               fontWeight: 700,
                               color: color,
                               fontFamily: 'Outfit',
@@ -355,7 +362,7 @@ export default function ItinerarySidebar({
 
                         <h4
                           style={{
-                            fontSize: '13px',
+                            fontSize: isMobile ? '12px' : '13px',
                             fontWeight: 700,
                             marginTop: '4px',
                             color: 'var(--text-main)',
@@ -365,7 +372,7 @@ export default function ItinerarySidebar({
                         </h4>
                         <p
                           style={{
-                            fontSize: '11px',
+                            fontSize: isMobile ? '10px' : '11px',
                             color: 'var(--text-muted)',
                             marginTop: '2px',
                             lineBreak: 'anywhere',
@@ -388,29 +395,6 @@ export default function ItinerarySidebar({
                   );
                 })}
             </div>
-          </div>
-
-          <div
-            style={{
-              padding: '20px 24px',
-              background: 'var(--secondary-light)',
-              textAlign: 'center',
-              borderTop: '1px solid var(--border)',
-            }}
-          >
-            <p
-              style={{
-                color: 'var(--secondary)',
-                fontSize: '13px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '4px',
-              }}
-            >
-              <ThumbsUp size={14} /> 안전하고 행복한 동반 여행 되세요!
-            </p>
           </div>
         </div>
       ) : (
