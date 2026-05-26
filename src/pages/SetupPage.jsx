@@ -32,7 +32,7 @@ export default function SetupPage({
   onStartPlanning,
   onBack,
 }) {
-  // 입력된 텍스트에 따른 지역 목록 필터링 (괄호 동반처 문구 없이 순수 고유 지역명 매칭)
+  // 지역 목록 필터링
   const getFilteredRegions = () => {
     if (!regionInput) return availableRegions;
     return availableRegions.filter((r) =>
@@ -42,6 +42,7 @@ export default function SetupPage({
 
   return (
     <div
+      className="setup-container"
       style={{
         width: '100%',
         height: '100%',
@@ -54,7 +55,6 @@ export default function SetupPage({
         overflowY: 'auto',
       }}
     >
-      {/* 백그라운드 데코 장식 */}
       <div
         style={{
           position: 'absolute',
@@ -83,7 +83,7 @@ export default function SetupPage({
       </div>
 
       <div
-        className="glass"
+        className="glass setup-card"
         style={{
           width: '100%',
           maxWidth: '540px',
@@ -98,7 +98,7 @@ export default function SetupPage({
           zIndex: 10,
         }}
       >
-        {/* 상단 닫기/돌아가기 헤더 */}
+        {/* 상단 헤더 */}
         <div
           style={{
             display: 'flex',
@@ -137,7 +137,7 @@ export default function SetupPage({
           </span>
         </div>
 
-        {/* 타이틀 로고 헤더 (놀러가개 복원) */}
+        {/* 로고 헤더 */}
         <div style={{ textAlign: 'center' }}>
           <div
             style={{
@@ -192,7 +192,7 @@ export default function SetupPage({
 
         {/* 설정 폼 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* 1. 여행 희망 지역 검색 (자동완성) */}
+          {/* 1. 여행 희망 지역 검색 */}
           <div
             style={{
               display: 'flex',
@@ -282,7 +282,7 @@ export default function SetupPage({
             </div>
           </div>
 
-          {/* 2. 시작 중심지 설정 (검색 + 추천 후보 칩) */}
+          {/* 2. 시작 중심지 설정 */}
           <div
             style={{
               display: 'flex',
@@ -305,7 +305,7 @@ export default function SetupPage({
               중심지는 어디인가요?
             </label>
 
-            {/* 시작 중심지 검색 입력 */}
+            {/* 중심지 직접 검색 */}
             <div style={{ position: 'relative' }}>
               <input
                 type="text"
@@ -363,7 +363,7 @@ export default function SetupPage({
               )}
             </div>
 
-            {/* 추천 시작 후보 칩 목록 */}
+            {/* 추천 후보 칩 목록 */}
             <div
               style={{
                 display: 'flex',
@@ -400,7 +400,7 @@ export default function SetupPage({
             </div>
           </div>
 
-          {/* 3. 일정 (달력) 폼 */}
+          {/* 3. 일정 선택 */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label
               style={{

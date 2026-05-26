@@ -146,3 +146,164 @@ a {
 .interactive:active {
   transform: translateY(0);
 }
+
+/* ==========================================================================
+   Mobile Responsive Rules (모바일 기기 및 태블릿 보정)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  /* 1. 앱 컨테이너 세로 컬럼 스왑 */
+  .app-container {
+    flex-direction: column !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    overflow: hidden !important;
+  }
+
+  /* 2. SetupPage 모바일 여백 튜닝 */
+  .setup-container {
+    padding: 16px !important;
+  }
+  .setup-card {
+    padding: 24px 20px !important;
+    gap: 20px !important;
+  }
+  .setup-card h1 {
+    font-size: 24px !important;
+  }
+  .setup-card h2 {
+    font-size: 16px !important;
+  }
+
+  /* 3. PlanPage 레이아웃 반응형 보정 - 🌟 지도가 화면 전체를 깊게 채우고, 드래그가 100% 작동하도록 pointer-events 보장 */
+  .main-map-area {
+    height: 100vh !important; /* 지도가 화면 전체를 뒤덮음 */
+    width: 100vw !important;
+    position: relative !important;
+    flex: none !important;
+  }
+
+  .map-wrapper {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: calc(100vh - 48px) !important; /* 바텀시트 손잡이 뺀 영역만큼 꽉 채움 */
+    z-index: 10 !important;
+    pointer-events: auto !important; /* 지도 드래그 100% 허용 */
+    touch-action: auto !important;
+  }
+
+  /* 🌟 초고품격 터치 토글 바텀 시트(Bottom Sheet)로 사이드바 전면 개조 */
+  .itinerary-sidebar {
+    width: 100vw !important;
+    height: 78vh !important; /* 터치 시 확대 슬라이더 라인까지 높이 솟아오름 */
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 150 !important; /* 지도가 가리지 않고 위로 덮도록 높은 Z-Index 제공 */
+    border-left: none !important;
+    border-top: 2px solid var(--primary) !important;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
+    background: #fff !important;
+    flex: none !important;
+    
+    /* 🌟 기본 접힌 상태: 관심 일정 담기 타이틀(145px)까지 터치 없이 선명하게 노출 */
+    transform: translateY(calc(78vh - 145px)) !important; 
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 -8px 32px rgba(45, 55, 72, 0.15) !important;
+    
+    /* 🌟 거대한 78vh 상자 영역이 지도를 덮어 클릭/드래그를 가로채지 않도록 포인터 이벤트를 일단 투과시킵니다. */
+    pointer-events: none !important;
+  }
+
+  /* 🌟 토글이 활성화되어 확장(Expanded)된 상태: 쑥 위로 솟아오름 & 스크롤/터치 상호작용 복원 */
+  .itinerary-sidebar.expanded {
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+  }
+  
+  /* 사이드바 내부의 직계 자식 div(내용물)들은 터치를 안전하게 수용합니다. */
+  .itinerary-sidebar > div {
+    pointer-events: auto !important;
+  }
+
+  /* 모바일 전용 바텀시트 터치/클릭 손잡이 바 강제 활성화 */
+  .mobile-swipe-handle {
+    display: flex !important;
+    height: 36px !important;
+    background: var(--bg-base) !important;
+    border-top-left-radius: var(--radius-lg) !important;
+    border-top-right-radius: var(--radius-lg) !important;
+  }
+  .mobile-swipe-handle div {
+    background: var(--primary) !important;
+    width: 50px !important;
+    height: 5px !important;
+    border-radius: var(--radius-full) !important;
+    opacity: 0.75 !important;
+  }
+
+  /* 4. PlanPage 상단 배너 Spacing 및 가림 해결 (수평 한 줄 배치 및 스티커 제거) */
+  .plan-header-banner {
+    top: 6px !important;
+    left: 6px !important;
+    right: 48px !important; /* 확대 슬라이더 간섭 방지 Spacing */
+    padding: 6px 12px !important;
+    gap: 6px !important;
+    flex-direction: row !important; /* 모바일에서도 깔끔하게 한 줄 수평 배치 */
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-radius: var(--radius-sm) !important;
+    z-index: 100 !important;
+  }
+  .plan-header-banner button {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+  .plan-header-banner div {
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+  
+  /* 빨간색 API 로딩 스티커 배지 모바일에서 완전 제거 */
+  .plan-api-badge {
+    display: none !important;
+  }
+
+  /* 5. 하단 카테고리 슬라이더 카드 크기 튜닝 (지도를 가리지 않게 콤팩트화 및 터치 투과 포인터 보존) */
+  .place-carousel-container {
+    bottom: 153px !important; /* 접힌 바텀시트(145px) 바로 위쪽인 153px 지점에 카드 안착 */
+    left: 4px !important;
+    right: 4px !important;
+    gap: 4px !important;
+    z-index: 90 !important;
+    pointer-events: none !important;
+  }
+  .place-card-item {
+    flex: 0 0 185px !important; /* 버튼 가로 한 줄 출력을 위해 너비를 185px로 튜닝 */
+    padding: 10px 12px !important;
+    min-height: 105px !important;
+    gap: 4px !important;
+    pointer-events: auto !important;
+  }
+  .place-card-item h3 {
+    font-size: 11px !important;
+    margin-bottom: 2px !important;
+  }
+  .place-card-item p {
+    font-size: 9px !important;
+  }
+  .place-card-item span {
+    font-size: 9px !important;
+  }
+  .place-card-item button {
+    padding: 4px 10px !important;
+    font-size: 10px !important;
+    white-space: nowrap !important; /* 텍스트 세로 쪼개짐 강제 방지 */
+  }
+}

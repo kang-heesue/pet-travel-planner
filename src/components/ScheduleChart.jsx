@@ -1,9 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-/**
- * D3.js 기반으로 일차별 여정 정보(명소, 식당, 카페, 숙소 등) 비중과
- * 총 소요시간 분석을 직관적인 Donut Chart 그래프로 렌더링하는 시각화 컴포넌트입니다.
- */
+// D3.js 기반 일정 분석 도넛 차트
 export default function ScheduleChart({ dayPlaces }) {
   const svgRef = useRef(null);
 
@@ -12,26 +9,49 @@ export default function ScheduleChart({ dayPlaces }) {
 
     const d3 = window.d3;
 
-    // 1. 카테고리별 시간 분배 및 라벨 계산
+    // 1. 카테고리별 시간 계산
     const categoryMinutes = {
       '관광 명소': 0,
-      식당: 0,
-      카페: 0,
-      숙소: 0,
+      '식당': 0,
+      '카페': 0,
+    };
+
+    // 체류 시간 파싱
+    const parseDurationText = (text) => {
+      if (!text) return 0;
+      if (
+        text.includes('여정 종료') ||
+        text.includes('체크인') ||
+        text.includes('체크아웃') ||
+        text.includes('출발')
+      ) {
+        return 0;
+      }
+      
+      let mins = 0;
+      const hourMatch = text.match(/(\d+)시간/);
+      const minMatch = text.match(/(\d+)분/);
+      
+      if (hourMatch) mins += parseInt(hourMatch[1]) * 60;
+      if (minMatch) mins += parseInt(minMatch[1]);
+      
+      return mins;
     };
 
     dayPlaces.forEach((p) => {
-      // 카테고리별 체류 시간 규정 매핑
-      let mins = 90;
-      if (p.category === 'landmark') mins = 40;
-      if (p.category === 'tourist') mins = 120;
-      if (p.category === 'cafe') mins = 60;
-      if (p.category === 'hotel') mins = 180;
+      // 숙소 및 랜드마크 집계 제외
+      const isHotel = p.category === 'hotel' || p.id.includes('-hotel-');
+      const isSpecialNode = p.id === 'start-landmark-node' || p.id === 'last-day-end-node';
+      
+      if (isHotel || isSpecialNode) return;
+
+      // 체류 시간 집계
+      const mins = parseDurationText(p.duration);
+      if (mins <= 0) return;
 
       let catLabel = '관광 명소';
       if (p.category === 'restaurant') catLabel = '식당';
       if (p.category === 'cafe') catLabel = '카페';
-      if (p.category === 'hotel') catLabel = '숙소';
 
       categoryMinutes[catLabel] += mins;
     });
@@ -40,14 +60,17 @@ export default function ScheduleChart({ dayPlaces }) {
       .map((key) => ({ label: key, value: categoryMinutes[key] }))
       .filter((d) => d.value > 0);
 
-    if (chartData.length === 0) return;
+    if (chartData.length === 0) {
+      d3.select(svgRef.current).selectAll('*').remove();
+      return;
+    }
 
-    // SVG 크기 및 중심점 세팅
+    // SVG 크기 세팅
     const width = 140;
     const height = 140;
     const radius = Math.min(width, height) / 2;
 
-    // 기존 요소 클리어
+    // 기존 요소 제거
     d3.select(svgRef.current).selectAll('*').remove();
 
     const svg = d3
@@ -57,11 +80,11 @@ export default function ScheduleChart({ dayPlaces }) {
       .append('g')
       .attr('transform', `translate(${width / 2}, ${height / 2})`);
 
-    // 브랜드 테마(놀러가개) 웜톤 컬러 스케일
+    // 컬러 스케일 (지도 마커와 동일)
     const color = d3
       .scaleOrdinal()
-      .domain(chartData.map((d) => d.label))
-      .range(['#81b29a', '#e07a5f', '#f2cc8f', '#718096']); // Sage Green, Terracotta, Yellow, Gray
+      .domain(['관광 명소', '식당', '카페'])
+      .range(['#4e79a7', '#e15759', '#f28e2b']);
 
     const pie = d3
       .pie()
@@ -80,7 +103,7 @@ export default function ScheduleChart({ dayPlaces }) {
       .append('g')
       .attr('class', 'arc');
 
-    // 패스 드로잉 및 회전 애니메이션
+    // 패스 드로잉 및 애니메이션
     arcs
       .append('path')
       .attr('d', arc)
@@ -97,7 +120,7 @@ export default function ScheduleChart({ dayPlaces }) {
         };
       });
 
-    // 중앙 총 여정 소요시간 텍스트 배치
+    // 중앙 소요시간 텍스트
     svg
       .append('text')
       .attr('text-anchor', 'middle')
@@ -105,7 +128,7 @@ export default function ScheduleChart({ dayPlaces }) {
       .style('font-size', '9px')
       .style('font-weight', '700')
       .style('fill', 'var(--text-muted)')
-      .text('소요 시간');
+      .text('활동 시간');
 
     const totalMins = d3.sum(chartData, (d) => d.value);
     const totalHours = (totalMins / 60).toFixed(1);
@@ -137,7 +160,7 @@ export default function ScheduleChart({ dayPlaces }) {
     >
       <svg ref={svgRef} style={{ flexShrink: 0 }}></svg>
 
-      {/* 범례 및 소요 시간 상세 리포트 */}
+      {/* 범례 리포트 */}
       <div
         style={{
           flex: 1,
@@ -171,10 +194,10 @@ export default function ScheduleChart({ dayPlaces }) {
             );
 
             const categories = [
-              { key: 'tourist', label: '명소 🏞️', color: '#81b29a' },
-              { key: 'restaurant', label: '식당 🍽️', color: '#e07a5f' },
-              { key: 'cafe', label: '카페 ☕', color: '#f2cc8f' },
-              { key: 'hotel', label: '숙소 🏨', color: '#718096' },
+              { key: 'tourist', label: '명소 🏞️', color: '#4e79a7' },
+              { key: 'restaurant', label: '식당 🍽️', color: '#e15759' },
+              { key: 'cafe', label: '카페 ☕', color: '#f28e2b' },
+              { key: 'hotel', label: '숙소 🏠', color: '#59a14f' },
             ];
 
             return categories.map((cat) => {

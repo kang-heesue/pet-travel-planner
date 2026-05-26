@@ -4,7 +4,7 @@ import { optimizeSchedule } from './utils/optimizer';
 import SetupPage from './pages/SetupPage';
 import PlanPage from './pages/PlanPage';
 
-// 각 대표 지역별 기본 KTX역/터미널 추천 랜드마크 데이터셋
+// 대표 지역별 추천 랜드마크
 const RECOMMENDED_LANDMARKS = {
   '부산': [
     { name: '부산역 (KTX)', lat: 35.1152, lng: 129.0422 },
@@ -47,6 +47,32 @@ const RECOMMENDED_LANDMARKS = {
     { name: '평창역 (KTX)', lat: 37.5255, lng: 128.4312 },
     { name: '대관령 하늘목장', lat: 37.7117, lng: 128.7321 },
     { name: '오대산 월정사', lat: 37.7315, lng: 128.5902 }
+  ],
+  '제주': [
+    { name: '제주국제공항', lat: 33.5104, lng: 126.4913 },
+    { name: '제주항 연안여객터미널', lat: 33.5273, lng: 126.5432 },
+    { name: '함덕 해수욕장', lat: 33.5433, lng: 126.6690 },
+    { name: '협재 해수욕장', lat: 33.3938, lng: 126.2396 }
+  ],
+  '제주도': [
+    { name: '제주국제공항', lat: 33.5104, lng: 126.4913 },
+    { name: '제주항 연안여객터미널', lat: 33.5273, lng: 126.5432 },
+    { name: '함덕 해수욕장', lat: 33.5433, lng: 126.6690 },
+    { name: '협재 해수욕장', lat: 33.3938, lng: 126.2396 }
+  ],
+  '제주특별자치도': [
+    { name: '제주국제공항', lat: 33.5104, lng: 126.4913 },
+    { name: '제주항 연안여객터미널', lat: 33.5273, lng: 126.5432 },
+    { name: '함덕 해수욕장', lat: 33.5433, lng: 126.6690 },
+    { name: '협재 해수욕장', lat: 33.3938, lng: 126.2396 }
+  ],
+  '태안': [
+    { name: '태안공용버스터미널', lat: 36.7533, lng: 126.3023 },
+    { name: '안면도 쥬라기박물관', lat: 36.6521, lng: 126.3622 }
+  ],
+  '태안군': [
+    { name: '태안공용버스터미널', lat: 36.7533, lng: 126.3023 },
+    { name: '안면도 쥬라기박물관', lat: 36.6521, lng: 126.3622 }
   ]
 };
 
@@ -55,11 +81,107 @@ const DEFAULT_COORDS = { name: '대한민국 중심지', lat: 37.5665, lng: 126.
 const REGION_API_CODES = {
   '서울': '1', '인천': '2', '대전': '3', '대구': '4', '광주': '5', '부산': '6', '울산': '7', '세종': '8',
   '경기': '31', '강원': '32', '충북': '33', '충남': '34', '경북': '35', '경남': '36', '전북': '37', '전남': '38', '제주': '39',
-  '강릉': '32', '속초': '32', '춘천': '32', '원주': '32', '양양': '32', '영월': '32', '평창': '32', '고성': '32', '삼척': '32', '홍천': '32'
+};
+
+// 상위 광역 시도 코드 검출
+const getAreaCodeForRegion = (regionName, allPlaces) => {
+  if (REGION_API_CODES[regionName]) return REGION_API_CODES[regionName];
+
+  // CSV 주소 기반 접두사 판정
+  const match = allPlaces.find(p => p.region === regionName);
+  if (match && match.address) {
+    const addr = match.address.trim();
+    if (addr.startsWith('서울')) return '1';
+    if (addr.startsWith('인천')) return '2';
+    if (addr.startsWith('대전')) return '3';
+    if (addr.startsWith('대구')) return '4';
+    if (addr.startsWith('광주')) return '5';
+    if (addr.startsWith('부산')) return '6';
+    if (addr.startsWith('울산')) return '7';
+    if (addr.startsWith('세종')) return '8';
+    if (addr.startsWith('경기') || addr.startsWith('가평') || addr.startsWith('양평') || addr.startsWith('남양주')) return '31';
+    if (addr.startsWith('강원') || addr.startsWith('강릉') || addr.startsWith('속초') || addr.startsWith('춘천')) return '32';
+    if (addr.startsWith('충북') || addr.startsWith('충청북도')) return '33';
+    if (addr.startsWith('충남') || addr.startsWith('충청남도') || addr.startsWith('태안') || addr.startsWith('보령')) return '34';
+    if (addr.startsWith('경북') || addr.startsWith('경상북도')) return '35';
+    if (addr.startsWith('경남') || addr.startsWith('경상남도') || addr.startsWith('밀양')) return '36';
+    if (addr.startsWith('전북') || addr.startsWith('전라북도')) return '37';
+    if (addr.startsWith('전남') || addr.startsWith('전라남도') || addr.startsWith('여수')) return '38';
+    if (addr.startsWith('제주') || addr.startsWith('서귀포')) return '39';
+  }
+
+  // 소도시 수동 폴백
+  const name = regionName || '';
+  if (name.includes('강릉') || name.includes('속초') || name.includes('춘천') || name.includes('원주') || name.includes('양양') || name.includes('영월') || name.includes('평창') || name.includes('고성') || name.includes('홍천')) return '32';
+  if (name.includes('가평') || name.includes('양평') || name.includes('남양주') || name.includes('김포') || name.includes('의정부') || name.includes('고양')) return '31';
+  if (name.includes('태안') || name.includes('보령') || name.includes('천안') || name.includes('아산')) return '34';
+  if (name.includes('여수') || name.includes('순천') || name.includes('목포')) return '38';
+  if (name.includes('밀양') || name.includes('거제') || name.includes('남해') || name.includes('통영')) return '36';
+  if (name.includes('제주') || name.includes('서귀포')) return '39';
+
+  return '32'; // 최종 폴백 기본값 (강원)
+};
+
+// 상위 광역 시도명 검출 헬퍼
+const getProvinceForRegion = (regionName, allPlaces) => {
+  if (!regionName || !allPlaces) return '강원도';
+
+  // 1차 필터링
+  if (['서울', '서울특별시'].includes(regionName)) return '서울특별시';
+  if (['인천', '인천광역시'].includes(regionName)) return '인천광역시';
+  if (['대전', '대전광역시'].includes(regionName)) return '대전광역시';
+  if (['대구', '대구광역시'].includes(regionName)) return '대구광역시';
+  if (['광주', '광주광역시'].includes(regionName)) return '광주광역시';
+  if (['부산', '부산광역시'].includes(regionName)) return '부산광역시';
+  if (['울산', '울산광역시'].includes(regionName)) return '울산광역시';
+  if (['세종', '세종특별자치시'].includes(regionName)) return '세종특별자치시';
+  if (['경기', '경기도'].includes(regionName)) return '경기도';
+  if (['강원', '강원도'].includes(regionName)) return '강원도';
+  if (['충북', '충청북도'].includes(regionName)) return '충청북도';
+  if (['충남', '충청남도'].includes(regionName)) return '충청남도';
+  if (['경북', '경상북도'].includes(regionName)) return '경상북도';
+  if (['경남', '경상남도'].includes(regionName)) return '경상남도';
+  if (['전북', '전라북도'].includes(regionName)) return '전라북도';
+  if (['전남', '전라남도'].includes(regionName)) return '전라남도';
+  if (['제주', '제주도', '제주특별자치도'].includes(regionName)) return '제주특별자치도';
+
+  // CSV 접두사 판정
+  const match = allPlaces.find(p => p.region === regionName);
+  if (match && match.address) {
+    const addr = match.address.trim();
+    if (addr.startsWith('서울')) return '서울특별시';
+    if (addr.startsWith('인천')) return '인천광역시';
+    if (addr.startsWith('대전')) return '대전광역시';
+    if (addr.startsWith('대구')) return '대구광역시';
+    if (addr.startsWith('광주') && !addr.includes('경기도')) return '광주광역시';
+    if (addr.startsWith('부산')) return '부산광역시';
+    if (addr.startsWith('울산')) return '울산광역시';
+    if (addr.startsWith('세종')) return '세종특별자치시';
+    if (addr.startsWith('경기') || addr.startsWith('가평') || addr.startsWith('양평') || addr.startsWith('남양주')) return '경기도';
+    if (addr.startsWith('강원') || addr.startsWith('강릉') || addr.startsWith('속초') || addr.startsWith('춘천')) return '강원도';
+    if (addr.startsWith('충북') || addr.startsWith('충청북도')) return '충청북도';
+    if (addr.startsWith('충남') || addr.startsWith('충청남도') || addr.startsWith('태안') || addr.startsWith('보령')) return '충청남도';
+    if (addr.startsWith('경북') || addr.startsWith('경상북도')) return '경상북도';
+    if (addr.startsWith('경남') || addr.startsWith('경상남도') || addr.startsWith('밀양')) return '경상남도';
+    if (addr.startsWith('전북') || addr.startsWith('전라북도')) return '전라북도';
+    if (addr.startsWith('전남') || addr.startsWith('전라남도') || addr.startsWith('여수')) return '전라남도';
+    if (addr.startsWith('제주') || addr.startsWith('서귀포')) return '제주특별자치도';
+  }
+
+  // 소도시 수동 폴백
+  const name = regionName || '';
+  if (name.includes('강릉') || name.includes('속초') || name.includes('춘천') || name.includes('원주') || name.includes('양양') || name.includes('영월') || name.includes('평창') || name.includes('고성') || name.includes('홍천')) return '강원도';
+  if (name.includes('가평') || name.includes('양평') || name.includes('남양주') || name.includes('김포') || name.includes('의정부') || name.includes('고양')) return '경기도';
+  if (name.includes('태안') || name.includes('보령') || name.includes('천안') || name.includes('아산')) return '충청남도';
+  if (name.includes('여수') || name.includes('순천') || name.includes('목포')) return '전라남도';
+  if (name.includes('밀양') || name.includes('거제') || name.includes('남해') || name.includes('통영')) return '경상남도';
+  if (name.includes('제주') || name.includes('서귀포')) return '제주특별자치도';
+
+  return '강원도'; // 최종 폴백 기본값
 };
 
 export default function App() {
-  // --- 상태 정의 (States) ---
+  // --- States ---
   const [step, setStep] = useState('setup'); // 'setup' | 'plan'
   
   // 데이터셋 관련
@@ -73,20 +195,38 @@ export default function App() {
   const [liveApiCount, setLiveApiCount] = useState(0);
 
   // 셋업 파라미터 상태
-  const [regionInput, setRegionInput] = useState('부산');
-  const [selectedRegion, setSelectedRegion] = useState('부산');
+  const [regionInput, setRegionInput] = useState('강릉');
+  const [selectedRegion, setSelectedRegion] = useState('강릉');
   const [showRegionSuggestions, setShowRegionSuggestions] = useState(false);
 
   // 시작 중심지 검색 & 후보군 상태
-  const [startSearchInput, setStartSearchInput] = useState('부산역 (KTX)');
-  const [startPlaceName, setStartPlaceName] = useState('부산역 (KTX)');
-  const [startCoords, setStartCoords] = useState({ lat: 35.1152, lng: 129.0422 });
+  const [startSearchInput, setStartSearchInput] = useState('강릉역 (KTX)');
+  const [startPlaceName, setStartPlaceName] = useState('강릉역 (KTX)');
+  const [startCoords, setStartCoords] = useState({ lat: 37.7638, lng: 128.8995 });
   const [showStartSuggestions, setShowStartSuggestions] = useState(false);
   const [startSuggestions, setStartSuggestions] = useState([]);
 
-  // 여행 기간 날짜 상태
-  const [startDate, setStartDate] = useState('2026-05-16');
-  const [endDate, setEndDate] = useState('2026-05-18');
+  // --- 날짜 계산 헬퍼 ---
+  const getTodayString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const getFutureDateString = (daysAhead) => {
+    const date = new Date();
+    date.setDate(date.getDate() + daysAhead);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // 여행 기간 날짜 상태 (기본 오늘 ~ 내일, 1박2일)
+  const [startDate, setStartDate] = useState(getTodayString());
+  const [endDate, setEndDate] = useState(getFutureDateString(1));
 
   // 일정 계획용 메인 상태
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -99,7 +239,7 @@ export default function App() {
   const [optimizedSchedule, setOptimizedSchedule] = useState({});
   const [activeDayTab, setActiveDayTab] = useState('Day 1');
 
-  // --- 1. CSV 로컬 캐시 데이터 페칭 (최초 1회 실행) ---
+  // --- 1. CSV 데이터 페칭 ---
   useEffect(() => {
     const loadCSVData = async () => {
       try {
@@ -112,16 +252,14 @@ export default function App() {
         
         setAllPlaces(parsed);
 
-        // 고유 지역명 목록 정렬 추출
         const regions = Array.from(new Set(parsed.map(item => item.region)))
           .filter(Boolean)
           .sort((a, b) => a.localeCompare(b, 'ko'));
         
         setAvailableRegions(regions);
 
-        // 기본 부산 지역 데이터셋 바인딩
-        const busanPlaces = parsed.filter(item => item.region === '부산');
-        setPlaces(busanPlaces);
+        const gangneungPlaces = parsed.filter(item => item.region === '강릉');
+        setPlaces(gangneungPlaces);
         setIsLoading(false);
       } catch (err) {
         console.error("CSV 로드 에러 발생:", err);
@@ -131,16 +269,15 @@ export default function App() {
     loadCSVData();
   }, []);
 
-  // --- 2. 실시간 공공 API 연동 및 로컬 폴백 (하이브리드 스왑) ---
+  // --- 2. 실시간 API 연동 ---
   const fetchLivePetTourData = async (regionName) => {
-    const areaCode = REGION_API_CODES[regionName] || '32';
+    const areaCode = getAreaCodeForRegion(regionName, allPlaces);
     const serviceKey = '3659087dc19dc9a8d6764c4ee50be1ce77aeb5816b6562ce997cc0c754fa5529';
     const liveApiUrl = `https://apis.data.go.kr/B551011/KorPetTourService2/areaBasedList2?serviceKey=${serviceKey}&numOfRows=40&pageNo=1&MobileOS=ETC&MobileApp=PetPlanner&_type=json&areaCode=${areaCode}`;
     
     console.log(`[API REQUEST] 실시간 호출 시도: ${liveApiUrl}`);
     setApiLoadStatus('fetching');
     
-    // 방어 로직: 지역 변경 시 이전 지역의 마커들이 임시로 잔존해 피팅 오차를 범하는 것을 원천 차단하기 위해 places를 비움
     setPlaces([]);
 
     try {
@@ -172,7 +309,6 @@ export default function App() {
           };
         });
 
-        // 비동기 경쟁상태(Race Condition) 방어: 사용자가 그새 다른 지역으로 넘겼다면 무시
         setSelectedRegion(currentRegion => {
           if (currentRegion === regionName) {
             setPlaces(mappedLivePlaces);
@@ -185,8 +321,7 @@ export default function App() {
         throw new Error("조회된 실시간 정보 부재");
       }
     } catch (err) {
-      console.warn(`[CORS / NETWORK BLOCK] 공공 API 통신 차단으로 로컬 안전 캐시 DB 스와핑:`, err);
-      // 폴백 시에도 경쟁상태 방어 작동
+      console.warn(`[CORS / NETWORK BLOCK] API 통신 차단, 로컬 캐시 사용:`, err);
       setSelectedRegion(currentRegion => {
         if (currentRegion === regionName) {
           const localFiltered = allPlaces.filter(p => p.region === regionName);
@@ -199,7 +334,7 @@ export default function App() {
     }
   };
 
-  // --- 3. 지역 변경 트리거 핸들러 ---
+  // --- 3. 지역 변경 핸들러 ---
   const handleRegionChange = (region) => {
     setSelectedRegion(region);
     setRegionInput(region);
@@ -223,36 +358,44 @@ export default function App() {
     setStartSearchInput(selectedLandmark.name);
     setStartCoords({ lat: selectedLandmark.lat, lng: selectedLandmark.lng });
 
-    // 실시간 한국관광공사 데이터 갱신 기동
     fetchLivePetTourData(region);
   };
 
-  // 대표 시작 중심지 후보군 동적 추출
+  // 시작지 후보 추출
   const getStartCandidates = (region = selectedRegion) => {
     if (RECOMMENDED_LANDMARKS[region]) {
       return RECOMMENDED_LANDMARKS[region];
     }
-    const regionPlaces = allPlaces.filter(p => p.region === region);
+    
+    const norm = region.replace(/(시|군|구|특별자치도|도)$/, '').trim();
+    const regionPlaces = allPlaces.filter(p => p.region.includes(norm) || p.address.includes(norm));
+    
     const tourists = regionPlaces.filter(p => p.category === 'tourist').slice(0, 4);
     if (tourists.length > 0) {
       return tourists.map(t => ({ name: t.name, lat: t.lat, lng: t.lng }));
     }
-    return regionPlaces.slice(0, 4).map(t => ({ name: t.name, lat: t.lat, lng: t.lng }));
+    
+    const fallbacks = regionPlaces.slice(0, 4);
+    if (fallbacks.length > 0) {
+      return fallbacks.map(t => ({ name: t.name, lat: t.lat, lng: t.lng }));
+    }
+    
+    if (allPlaces.length > 0) {
+      return [{ name: `${region} 중심지`, lat: allPlaces[0].lat, lng: allPlaces[0].lng }];
+    }
+    return [DEFAULT_COORDS];
   };
 
-  // 시작지 검색 입력 매칭 필터링 (카카오 공식 지도 키워드 검색 서비스 API 결합)
+  // 시작지 검색 매칭
   useEffect(() => {
     if (!startSearchInput || startSearchInput === startPlaceName) {
       setStartSuggestions([]);
       return;
     }
 
-    // 1. 카카오 지도 SDK 및 장소 검색 서비스가 로드되었을 경우: 공식 실시간 로컬 API 기동!
     if (window.kakao && window.kakao.maps && window.kakao.maps.services && window.kakao.maps.services.Places) {
       try {
         const ps = new window.kakao.maps.services.Places();
-        
-        // 검색 범위를 사용자가 선택한 대표 지역으로 좁히기 위해 키워드 조합 (예: "강릉 강릉역")
         const searchKeyword = `${selectedRegion} ${startSearchInput}`;
         
         ps.keywordSearch(searchKeyword, (data, status) => {
@@ -302,7 +445,7 @@ export default function App() {
     handleResetSchedule();
   };
 
-  // --- 4. 최적화 제어 핸들러 ---
+  // --- 4. 최적화 핸들러 ---
   const handleOptimizeSchedule = () => {
     if (cart.length === 0) return;
     
@@ -324,13 +467,12 @@ export default function App() {
   };
 
   const handleToggleCart = (place) => {
-    // 1. 일정표용 복제 숙소 ID일 경우 원래의 ID로 정화
+    // 1. 복제 숙소 ID 정화
     const targetId = typeof place.id === 'string' && place.id.includes('-hotel-') 
       ? place.id.split('-hotel-')[1] 
       : place.id;
 
-    // 2. 만약 cart에 추가하려는데 place.id가 일정표용 복제 숙소 ID라면,
-    //    cart에는 원래 ID를 가진 원본 형태의 객체로 저장해 줍니다.
+    // 2. 원본 ID로 저장
     const cleanPlace = typeof place.id === 'string' && place.id.includes('-hotel-')
       ? { ...place, id: targetId }
       : place;
@@ -342,18 +484,69 @@ export default function App() {
     }
   };
 
-  // 카테고리 & 검색어 매핑 장소 필터링
+  // 카테고리 & 검색어 필터링
   const getFilteredPlaces = () => {
-    if (!places) return [];
-    return places.filter(place => {
+    if (!allPlaces) return [];
+    
+    // 지자체 어미 정규화
+    const normRegion = selectedRegion ? selectedRegion.replace(/(시|군|구|도|특별자치도)$/, '') : '';
+
+    return allPlaces.filter(place => {
+      // 1. 지자체 소속 여부
+      const matchesRegion = !selectedRegion || 
+                            place.region.includes(normRegion) || 
+                            place.address.includes(normRegion);
+
+      // 2. 카테고리 필터
       const matchesCategory = selectedCategory === 'all' || place.category === selectedCategory;
+      
+      // 3. 검색어 필터
       const matchesSearch = place.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             place.address.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+      
+      return matchesRegion && matchesCategory && matchesSearch;
     });
   };
 
-  // --- 5. 안전 로딩 스피너 스크린 ---
+  // 광역 권역 기준 실시간 필터링
+  const getAllFilteredPlaces = () => {
+    if (!allPlaces) return [];
+    
+    // 1. 상위 광역 권역 획득
+    const province = getProvinceForRegion(selectedRegion, allPlaces);
+    
+    // 2. 권역별 필터링
+    return allPlaces.filter(place => {
+      let isMatch = false;
+      const addr = place.address.trim();
+      
+      if (province === '서울특별시') isMatch = addr.startsWith('서울');
+      else if (province === '인천광역시') isMatch = addr.startsWith('인천');
+      else if (province === '대전광역시') isMatch = addr.startsWith('대전');
+      else if (province === '대구광역시') isMatch = addr.startsWith('대구');
+      else if (province === '광주광역시') isMatch = addr.startsWith('광주') && !addr.includes('경기도');
+      else if (province === '부산광역시') isMatch = addr.startsWith('부산') || place.region === '부산';
+      else if (province === '울산광역시') isMatch = addr.startsWith('울산');
+      else if (province === '세종특별자치시') isMatch = addr.startsWith('세종');
+      else if (province === '경기도') isMatch = addr.startsWith('경기') || ['가평', '양평', '남양주', '김포', '포천'].includes(place.region);
+      else if (province === '강원도') isMatch = addr.startsWith('강원') || ['강릉', '속초', '춘천', '원주', '양양', '영월', '평창', '고성', '삼척', '홍천'].includes(place.region);
+      else if (province === '충청북도') isMatch = addr.startsWith('충북') || addr.startsWith('충청북도');
+      else if (province === '충청남도') isMatch = addr.startsWith('충남') || addr.startsWith('충청남도') || ['태안', '보령', '천안'].includes(place.region);
+      else if (province === '경상북도') isMatch = addr.startsWith('경북') || addr.startsWith('경상북도');
+      else if (province === '경상남도') isMatch = addr.startsWith('경남') || addr.startsWith('경상남도') || ['밀양', '거제', '남해', '통영'].includes(place.region);
+      else if (province === '전라북도') isMatch = addr.startsWith('전북') || addr.startsWith('전라북도');
+      else if (province === '전라남도') isMatch = addr.startsWith('전남') || addr.startsWith('전라남도') || ['여수', '순천'].includes(place.region);
+      else if (province === '제주특별자치도') isMatch = addr.startsWith('제주') || ['제주', '제주도', '서귀포'].includes(place.region);
+
+      const matchesCategory = selectedCategory === 'all' || place.category === selectedCategory;
+      const matchesSearch = place.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            place.address.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return isMatch && matchesCategory && matchesSearch;
+    });
+  };
+
+  // --- 5. 로딩 스피너 ---
   if (isLoading) {
     return (
       <div style={{
@@ -381,7 +574,7 @@ export default function App() {
     );
   }
 
-  // --- 6. 스위칭 라우터 기동 ---
+  // --- 6. 스위칭 라우터 ---
   return (
     <div className="app-container">
       {step === 'setup' && (
@@ -420,6 +613,7 @@ export default function App() {
           apiLoadStatus={apiLoadStatus}
           liveApiCount={liveApiCount}
           filteredPlaces={getFilteredPlaces()}
+          allFilteredPlaces={getAllFilteredPlaces()}
           selectedPlace={selectedPlace}
           setSelectedPlace={setSelectedPlace}
           cart={cart}
