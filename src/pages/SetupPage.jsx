@@ -32,6 +32,14 @@ export default function SetupPage({
   onStartPlanning,
   onBack,
 }) {
+  const [isMobile, setIsMobile] = React.useState(false);
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // 지역 목록 필터링
   const getFilteredRegions = () => {
     if (!regionInput) return availableRegions;
@@ -234,7 +242,7 @@ export default function SetupPage({
                   borderRadius: 'var(--radius-sm)',
                   border: '1.5px solid var(--border)',
                   outline: 'none',
-                  fontSize: '14px',
+                  fontSize: isMobile ? '16px' : '14px',
                   fontWeight: 600,
                   backgroundColor: '#fff',
                 }}
@@ -326,7 +334,7 @@ export default function SetupPage({
                   borderRadius: 'var(--radius-sm)',
                   border: '1.5px solid var(--border)',
                   outline: 'none',
-                  fontSize: '13px',
+                  fontSize: isMobile ? '16px' : '13px',
                   fontWeight: 600,
                   backgroundColor: '#fff',
                 }}
@@ -381,9 +389,9 @@ export default function SetupPage({
                   key={`landmark-chip-${idx}`}
                   onClick={() => handleSelectStartPlace(landmark)}
                   style={{
-                    padding: '6px 12px',
+                    padding: isMobile ? '4px 10px' : '6px 12px',
                     borderRadius: 'var(--radius-full)',
-                    fontSize: '11px',
+                    fontSize: isMobile ? '10px' : '11px',
                     fontWeight: 700,
                     backgroundColor:
                       startPlaceName === landmark.name
@@ -396,7 +404,7 @@ export default function SetupPage({
                     border: '1px solid transparent',
                     transition: 'var(--transition-fast)',
                   }}
-                  className="interactive"
+                  className="interactive setup-landmark-chip"
                 >
                   {landmark.name}
                 </button>
@@ -433,7 +441,7 @@ export default function SetupPage({
                   borderRadius: 'var(--radius-sm)',
                   border: '1.5px solid var(--border)',
                   outline: 'none',
-                  fontSize: '13px',
+                  fontSize: isMobile ? '16px' : '13px',
                   fontWeight: 600,
                   backgroundColor: '#fff',
                 }}
@@ -454,7 +462,7 @@ export default function SetupPage({
                   borderRadius: 'var(--radius-sm)',
                   border: '1.5px solid var(--border)',
                   outline: 'none',
-                  fontSize: '13px',
+                  fontSize: isMobile ? '16px' : '13px',
                   fontWeight: 600,
                   backgroundColor: '#fff',
                 }}
@@ -482,7 +490,7 @@ export default function SetupPage({
             boxShadow: '0 8px 24px rgba(224, 122, 95, 0.3)',
             transition: 'var(--transition-fast)',
           }}
-          className="interactive"
+          className="interactive setup-submit-btn"
         >
           <span>나만의 최적 일정 만들기 ⚡</span>
           <ArrowRight size={16} />

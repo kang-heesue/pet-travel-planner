@@ -34,12 +34,29 @@ export default function PlanPage({
 }) {
   const [isSidebarExpanded, setIsSidebarExpanded] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
+  const [isSearching, setIsSearching] = React.useState(false);
+  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
 
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  React.useEffect(() => {
+    if (!window.visualViewport) return;
+    const handleResize = () => {
+      const kh = window.innerHeight - window.visualViewport.height;
+      setKeyboardHeight(kh > 50 ? kh : 0);
+    };
+    window.visualViewport.addEventListener('resize', handleResize);
+    window.visualViewport.addEventListener('scroll', handleResize);
+    handleResize();
+    return () => {
+      window.visualViewport.removeEventListener('resize', handleResize);
+      window.visualViewport.removeEventListener('scroll', handleResize);
+    };
   }, []);
 
   // 여행 일수 계산
@@ -139,8 +156,8 @@ export default function PlanPage({
             </span>
         </div>
 
-        {/* 모바일 장소 탐색 중 상단 고정 검색바 */}
-        {!isOptimized && isMobile && (
+        {/* 모바일 검색창 단독 영역 (조건 재설정 아래 배치) */}
+        {isMobile && !isOptimized && (
           <div
             className="glass"
             style={{
@@ -149,22 +166,25 @@ export default function PlanPage({
               left: '6px',
               right: '6px',
               zIndex: 100,
+              borderRadius: 'var(--radius-sm)',
+              padding: '6px 12px',
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+              boxShadow: 'var(--shadow-md)',
               background: 'var(--bg-glass)',
-              padding: '8px 12px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-sm)',
+              transition: 'all 0.3s ease',
             }}
           >
-            <Search size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+            <Search size={14} color="var(--text-muted)" />
             <input
               type="text"
               placeholder="매장 명칭, 동네 검색..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsSearching(true)}
+              onBlur={() => setTimeout(() => setIsSearching(false), 200)}
               style={{
                 border: 'none',
                 background: 'transparent',
@@ -213,30 +233,31 @@ export default function PlanPage({
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
             handleOptimizeSchedule={handleOptimizeSchedule}
+            isSearching={isSearching}
+            keyboardHeight={keyboardHeight}
           />
         )}
       </div>
 
       {/* 2. 우측 사이드바 */}
-      {(!isMobile || isOptimized) && (
-        <ItinerarySidebar
-          cart={cart}
-          setCart={setCart}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          isOptimized={isOptimized}
-          optimizedSchedule={optimizedSchedule}
-          activeDayTab={activeDayTab}
-          setActiveDayTab={setActiveDayTab}
-          handleOptimizeSchedule={handleOptimizeSchedule}
-          handleResetSchedule={handleResetSchedule}
-          selectedPlace={selectedPlace}
-          setSelectedPlace={setSelectedPlace}
-          startPlaceName={startPlaceName}
-          isSidebarExpanded={isSidebarExpanded}
-          setIsSidebarExpanded={setIsSidebarExpanded}
-        />
-      )}
+      <ItinerarySidebar
+        cart={cart}
+        setCart={setCart}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        isOptimized={isOptimized}
+        optimizedSchedule={optimizedSchedule}
+        activeDayTab={activeDayTab}
+        setActiveDayTab={setActiveDayTab}
+        handleOptimizeSchedule={handleOptimizeSchedule}
+        handleResetSchedule={handleResetSchedule}
+        selectedPlace={selectedPlace}
+        setSelectedPlace={setSelectedPlace}
+        startPlaceName={startPlaceName}
+        isSidebarExpanded={isSidebarExpanded}
+        setIsSidebarExpanded={setIsSidebarExpanded}
+        isSearching={isSearching}
+      />
 
       {/* 3. 상세 모달 */}
       <PlaceDetailModal

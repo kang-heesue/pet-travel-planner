@@ -18,6 +18,7 @@ export default function ItinerarySidebar({
   startPlaceName,
   isSidebarExpanded,
   setIsSidebarExpanded,
+  isSearching,
 }) {
   const [isMobile, setIsMobile] = React.useState(false);
 
@@ -28,9 +29,16 @@ export default function ItinerarySidebar({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const handleRemoveFromCart = (id) => {
+    setCart(cart.filter((item) => item.id !== id));
+  };
+
+  const dragStartY = useRef(null);
+  const hotelCount = cart.filter((item) => item.category === 'hotel').length;
+
   return (
     <div
-      className={`glass itinerary-sidebar ${isSidebarExpanded ? 'expanded' : ''}`}
+      className={`glass itinerary-sidebar ${isSidebarExpanded ? 'expanded' : ''} ${isOptimized ? 'optimized-sidebar' : 'search-sidebar'} ${isSearching ? 'searching' : ''}`}
       style={{
         width: '400px',
         height: '100%',
@@ -90,9 +98,26 @@ export default function ItinerarySidebar({
           }}
         >
           <div
+            onTouchStart={(e) => {
+              dragStartY.current = e.touches[0].clientY;
+            }}
+            onTouchMove={(e) => {
+              if (dragStartY.current === null) return;
+              const deltaY = e.touches[0].clientY - dragStartY.current;
+              if (deltaY < -30 && !isSidebarExpanded) setIsSidebarExpanded(true);
+              if (deltaY > 30 && isSidebarExpanded) setIsSidebarExpanded(false);
+            }}
+            onTouchEnd={() => {
+              dragStartY.current = null;
+            }}
+            onClick={() => {
+              if (isMobile) setIsSidebarExpanded(!isSidebarExpanded);
+            }}
             style={{ 
               padding: isMobile ? '12px 16px' : '24px', 
-              borderBottom: '1px solid var(--border)' 
+              borderBottom: '1px solid var(--border)',
+              cursor: isMobile ? 'pointer' : 'default',
+              userSelect: 'none',
             }}
           >
             <div
@@ -395,7 +420,57 @@ export default function ItinerarySidebar({
                   );
                 })}
             </div>
+            {isMobile && (
+              <div
+                style={{
+                  padding: '16px 20px',
+                  background: 'var(--secondary-light)',
+                  textAlign: 'center',
+                  borderTop: '1px solid var(--border)',
+                  marginTop: '16px',
+                  borderRadius: 'var(--radius-md)',
+                }}
+              >
+                <p
+                  style={{
+                    color: 'var(--secondary)',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <ThumbsUp size={13} /> 안전하고 행복한 동반 여행 되세요!
+                </p>
+              </div>
+            )}
           </div>
+          {!isMobile && (
+            <div
+              style={{
+                padding: '20px 24px',
+                background: 'var(--secondary-light)',
+                textAlign: 'center',
+                borderTop: '1px solid var(--border)',
+              }}
+            >
+              <p
+                style={{
+                  color: 'var(--secondary)',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                }}
+              >
+                <ThumbsUp size={14} /> 안전하고 행복한 동반 여행 되세요!
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         // [MODE B] 관심 목록 장바구니
@@ -429,35 +504,37 @@ export default function ItinerarySidebar({
               출발지: {startPlaceName}
             </p>
 
-            {/* 검색바 */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'rgba(0,0,0,0.02)',
-                padding: '10px 14px',
-                borderRadius: 'var(--radius-sm)',
-                marginTop: '16px',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <Search size={16} color="var(--text-muted)" />
-              <input
-                type="text"
-                placeholder="매장 명칭, 동네 검색..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+            {/* 검색바 (PC에서만 표시, 모바일은 상단에 단독 노출되므로 사이드바에서는 미노출) */}
+            {!isMobile && (
+              <div
                 style={{
-                  border: 'none',
-                  background: 'transparent',
-                  outline: 'none',
-                  width: '100%',
-                  fontSize: '13px',
-                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(0,0,0,0.02)',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--radius-sm)',
+                  marginTop: '16px',
+                  border: '1px solid var(--border)',
                 }}
-              />
-            </div>
+              >
+                <Search size={16} color="var(--text-muted)" />
+                <input
+                  type="text"
+                  placeholder="매장 명칭, 동네 검색..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    outline: 'none',
+                    width: '100%',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {/* 장바구니 리스트 */}

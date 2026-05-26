@@ -10,6 +10,8 @@ export default function PlaceCardCarousel({
   selectedCategory,
   setSelectedCategory,
   handleOptimizeSchedule,
+  isSearching,
+  keyboardHeight,
 }) {
   const [isMobile, setIsMobile] = React.useState(false);
 
@@ -25,7 +27,7 @@ export default function PlaceCardCarousel({
       className="place-carousel-container"
       style={{
         position: 'absolute',
-        bottom: '24px',
+        bottom: isMobile ? (isSearching ? `${keyboardHeight + 8}px` : '153px') : '24px',
         left: '24px',
         right: '24px',
         zIndex: 50,
@@ -33,6 +35,7 @@ export default function PlaceCardCarousel({
         flexDirection: 'column',
         gap: '12px',
         pointerEvents: 'none',
+        transition: 'bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {/* 1. 카테고리 필터 칩 바 */}
