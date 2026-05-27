@@ -314,7 +314,7 @@ a {
   .plan-header-banner {
     top: 6px !important;
     left: 6px !important;
-    right: 6px !important; /* 확대 슬라이더 간섭 방지 Spacing */
+    right: 46px !important; /* 확대 슬라이더 간섭 방지 Spacing */
     padding: 6px 12px !important;
     gap: 6px !important;
     flex-direction: row !important; /* 모바일에서도 깔끔하게 한 줄 수평 배치 */

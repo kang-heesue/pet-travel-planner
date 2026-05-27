@@ -164,7 +164,7 @@ export default function PlanPage({
               position: 'absolute',
               top: '52px',
               left: '6px',
-              right: '6px',
+              right: '46px',
               zIndex: 100,
               borderRadius: 'var(--radius-sm)',
               padding: '6px 12px',
