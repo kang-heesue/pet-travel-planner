@@ -278,6 +278,7 @@ export default function KakaoMap({
     // 인포윈도우 장착
     const startInfowindow = new window.kakao.maps.InfoWindow({
       content: `<div style="padding:5px; font-size:11px; font-weight:700; color:#2d3748;">🏁 ${startPlaceName}</div>`,
+      disableAutoPan: true,
     });
     startInfowindow.open(map, startMarker);
     markersRef.current.push(startMarker);

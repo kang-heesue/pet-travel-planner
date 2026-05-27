@@ -48,7 +48,16 @@ export default function PlanPage({
     if (!window.visualViewport) return;
     const handleResize = () => {
       const kh = window.innerHeight - window.visualViewport.height;
-      setKeyboardHeight(kh > 50 ? kh : 0);
+      const currentKeyboardHeight = kh > 50 ? kh : 0;
+      setKeyboardHeight(currentKeyboardHeight);
+
+      // 키보드가 내려가서 높이가 0이 되었는데, input 포커스가 여전히 유지되어 있으면 강제로 blur 처리하여 토글을 복원
+      if (currentKeyboardHeight === 0) {
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+          activeEl.blur();
+        }
+      }
     };
     window.visualViewport.addEventListener('resize', handleResize);
     window.visualViewport.addEventListener('scroll', handleResize);
@@ -185,6 +194,11 @@ export default function PlanPage({
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearching(true)}
               onBlur={() => setTimeout(() => setIsSearching(false), 200)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.target.blur();
+                }
+              }}
               style={{
                 border: 'none',
                 background: 'transparent',
